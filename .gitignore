@@ -72,3 +72,10 @@ libstandaloneengine.a
 tests/string
 tests/config
 tests/ech-log/
+
+# wyvrnpm-generated — do not commit
+/build/
+/wyvrn_internal/
+/wyvrn.lock
+/CMakePresets.json
+/CMakeUserPresets.json
