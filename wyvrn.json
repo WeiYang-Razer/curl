@@ -1,6 +1,6 @@
 {
   "name": "curl",
-  "version": "8.19.0.2",
+  "version": "8.19.0.3",
   "schemaVersion": 2,
   "kind": "StaticLib",
   "description": "Client-side URL transfer library (HTTP/FTP/SMTP/...)",
@@ -30,5 +30,13 @@
       "-DCMAKE_MINSIZEREL_POSTFIX=msr"
     ],
     "installDir": "install"
+  },
+  "compatibility": {
+    "os": "exact",
+    "arch": "exact",
+    "compiler": "exact",
+    "compiler.version": "exact-or-newer",
+    "compiler.cppstd": "exact-or-newer",
+    "compiler.runtime": "exact"
   }
 }
