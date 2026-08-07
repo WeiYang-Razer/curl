@@ -1,6 +1,6 @@
 {
   "name": "curl",
-  "version": "8.19.0.3",
+  "version": "8.21.0.0",
   "schemaVersion": 2,
   "kind": "StaticLib",
   "description": "Client-side URL transfer library (HTTP/FTP/SMTP/...)",
