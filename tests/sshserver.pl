@@ -588,15 +588,14 @@ push @cfgarr, "# $sshdverstr sshd configuration file for curl testing";
 push @cfgarr, '#';
 
 # AllowUsers and DenyUsers options should use lowercase on Windows
-# and do not support quotes around values for some unknown reason.
+# and do not support quotes around values for an unknown reason.
 if($sshdid =~ /OpenSSH-Windows/) {
     my $username_lc = lc $username;
-    push @cfgarr, "AllowUsers " . $username_lc =~ s/ /\?/gr;
+    push @cfgarr, "AllowUsers " . ($username_lc =~ s/ /\?/gr);  # replace space with '?'
     if(exists $ENV{USERDOMAIN}) {
         my $userdomain_lc = lc $ENV{USERDOMAIN};
         $username_lc = "$userdomain_lc\\$username_lc";
-        $username_lc =~ s/ /\?/g; # replace space with ?
-        push @cfgarr, "AllowUsers " . $username_lc =~ s/ /\?/gr;
+        push @cfgarr, "AllowUsers " . ($username_lc =~ s/ /\?/gr);  # replace space with '?'
     }
 } else {
     push @cfgarr, "AllowUsers $username";
@@ -630,6 +629,9 @@ push @cfgarr, 'HostbasedAuthentication no';
 push @cfgarr, 'HostbasedUsesNameFromPacketOnly no';
 push @cfgarr, 'IgnoreRhosts yes';
 push @cfgarr, 'IgnoreUserKnownHosts yes';
+if(($sshdid =~ /OpenSSH/) && ($sshdvernum >= 700) && $ENV{'CURL_TEST_SSH_ENABLE_KEX'}) {
+    push @cfgarr, 'KexAlgorithms +' . $ENV{'CURL_TEST_SSH_ENABLE_KEX'};
+}
 if(($sshdid =~ /OpenSSH/) && ($sshdvernum >= 750) && $ENV{'CURL_TEST_SSH_DISABLE_KEX'}) {
     push @cfgarr, 'KexAlgorithms -' . $ENV{'CURL_TEST_SSH_DISABLE_KEX'};
 }
@@ -675,7 +677,7 @@ sub sshd_supports_opt {
         ($sshdid =~ /SunSSH/)) {
         # ssh daemon supports command line options -t -f and -o
         $err = grep /((Unsupported)|(Bad configuration)|(Deprecated)) option.*$option/,
-                    `\"$sshd\" -t -f $sshdconfig_abs -o \"$option=$value\" 2>&1`;
+                    qx(\"$sshd\" -t -f $sshdconfig_abs -o \"$option=$value\" 2>&1);
         return !$err;
     }
     if(($sshdid =~ /OpenSSH/) && ($sshdvernum >= 299)) {
@@ -686,7 +688,7 @@ sub sshd_supports_opt {
             return 0;
         }
         $err = grep /((Unsupported)|(Bad configuration)|(Deprecated)) option.*$option/,
-                    `\"$sshd\" -t -f $sshdconfig_abs 2>&1`;
+                    qx(\"$sshd\" -t -f $sshdconfig_abs 2>&1);
         unlink $sshdconfig;
         return !$err;
     }
@@ -1183,12 +1185,12 @@ if($sshdid =~ /OpenSSH-Windows/) {
 
     # Put an "exec" in front of the command so that the child process
     # keeps this child's process ID by being tied to the spawned shell.
-    exec("exec $cmd") || die "Cannot exec() $cmd: $!";
-    # exec() will create a new process, but ties the existence of the
+    exec("exec $cmd") or die "Cannot exec() $cmd: $!";
+    # exec() creates a new process, but ties the existence of the
     # new process to the parent waiting perl.exe and sh.exe processes.
 
     # exec() should never return back here to this process. We protect
-    # ourselves by calling die() just in case something goes really bad.
+    # ourselves by calling die() in case something goes really bad.
     die "error: exec() has returned";
 }
 
